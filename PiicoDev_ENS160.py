@@ -3,6 +3,8 @@
 # Peter Johnston at Core Electronics June 2022
 
 from PiicoDev_Unified import *
+from ucollections import namedtuple
+from ustruct import unpack
 
 compat_str = '\nUnified PiicoDev library out of date.  Get the latest module: https://piico.dev/unified \n'
 
@@ -42,14 +44,18 @@ _VAL_OPMODE_IDLE       = 0x01
 _VAL_OPMODE_STANDARD   = 0x02
 _VAL_OPMODE_RESET      = 0xF0
 
+AQI_Tuple = namedtuple("air quality index", ("value", "rating"))
+ECO2_Tuple = namedtuple("equivelent carbon dioxide", ("value", "rating"))
+
+
 def _read_bit(x, n):
     return x & 1 << n != 0
 
 def _read_crumb(x, n):
-    return _read_bit(x, n) + _read_bit(x, (n+1))^2
+    return _read_bit(x, n) + _read_bit(x, (n+1))*2
 
 def _read_tribit(x, n):
-    return _read_bit(x, n) + _read_bit(x, (n+1))^2 + _read_bit(x, (n+2))^3
+    return _read_bit(x, n) + _read_bit(x, (n+1))*2 + _read_bit(x, (n+2))*4
 
 def _set_bit(x, n):
     return x | (1 << n)
@@ -64,7 +70,10 @@ def _write_bit(x, n, b):
         return _set_bit(x, n)
 
 class PiicoDev_ENS160(object):
-    def __init__(self, bus=None, freq=None, sda=None, scl=None, address=_I2C_ADDRESS, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25, humidity=70):
+    def __init__(self, bus=None, freq=None, sda=None, scl=None, address=_I2C_ADDRESS, address_switch=None, asw=None, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25, humidity=70):
+        if address_switch == 0 or asw == 0: self.address = _I2C_ADDRESS
+        elif address_switch == 1 or asw == 1: self.address = _I2C_ADDRESS - 1
+        else: self.address = address
         try:
             if compat_ind >= 1:
                 pass
@@ -73,7 +82,6 @@ class PiicoDev_ENS160(object):
         except:
             print(compat_str)
         self.i2c = create_unified_i2c(bus=bus, freq=freq, sda=sda, scl=scl)
-        self.address = address
         config = 0x00
         if intdat or intgpr:
             config = _set_bit(config, _BIT_CONFIG_INTEN)
@@ -82,6 +90,9 @@ class PiicoDev_ENS160(object):
         config = _write_bit(config, _BIT_CONFIG_INT_CFG, int_cfg)
         config = _write_bit(config, _BIT_CONFIG_INTPOL, intpol)
         self.config = config
+        self._aqi = None
+        self._tvoc = None
+        self._eco2 = None
         try:
             part_id = self._read_int(_REG_PART_ID, 2)
             print('part_id: ' + str(part_id))
@@ -89,7 +100,6 @@ class PiicoDev_ENS160(object):
                 print('Device is not PiicoDev ENS160')
                 raise SystemExit
             self._write_int(_REG_OPMODE, _VAL_OPMODE_STANDARD, 1)
-            #self._write(_REG_OPMODE, bytes(_VAL_OPMODE_STANDARD))
             sleep_ms(20)
             print('written opmode standard')
             opmode = self._read_int(_REG_OPMODE, 1)
@@ -97,10 +107,9 @@ class PiicoDev_ENS160(object):
             sleep_ms(20)
             self._write_int(_REG_CONFIG, self.config, 1)
             print('written config register')
-            self.setTemperature(temperature)
+            self.temperature = temperature
             print('set the temperature')
-            self.setHumidity(humidity)
-            self.getDeviceStatus()
+            self.humidity = humidity
         except Exception as e:
             print(i2c_err_str.format(self.address))
             raise e
@@ -124,59 +133,97 @@ class PiicoDev_ENS160(object):
 
     def _write_int(self, register, integer, length):
         return self._write(register, int.to_bytes(integer,length,'little'))
-        
-    def getDeviceStatus(self):
-        device_status = int.from_bytes(self._read(_REG_DEVICE_STATUS, 1),'little')
-        print('device_status: ' + str(device_status))
-        self.statas = _read_bit(device_status, _BIT_DEVICE_STATUS_STATAS)
-        self.stater = _read_bit(device_status, _BIT_DEVICE_STATUS_STATER)
-        self.validity_flag = _read_crumb(device_status, _BIT_DEVICE_STATUS_VALIDITY_FLAG)
-        self.newdat = _read_bit(device_status, _BIT_DEVICE_STATUS_NEWDAT)
-        self.newgpr = _read_bit(device_status, _BIT_DEVICE_STATUS_NEWGPR)
-        
-    def setTemperature(self, temperature):
-        kelvin = int(temperature + 273.15)
-        buf = [0x00, 0x00]
-        buf[0] = (kelvin * 64) & 0xFF
-        buf[1] = ((kelvin *64) & 0xFF00) >> 8
-        #self._write(_REG_TEMP_IN, bytes(buf))
-        self._write_int(_REG_TEMP_IN, kelvin * 64, 2)
-            
-    def setHumidity(self, humidity):
-        buf = [0,0]
-        buf[0] = ((humidity * 512) & 0xFF)
-        buf[1] = ((humidity * 512) & 0xFF00) >> 8
-#        self._write(_REG_RH_IN, bytes(buf))
+
+    def _read_data(self):
+        if self.status_newdat is True:
+            print('----------------------------------------------------------------------------')
+            data = _read(self, _REG_DATA_AQI, 5)
+            self._aqi, self._tvoc, self._eco2 = unpack('<bhh', data)
+    
+    @property    
+    def humidity(self):
+        return self._read_int(_REG_DATA_RH, 2) / 512
+    
+    @humidity.setter
+    def humidity(self, humidity):
         self._write_int(_REG_RH_IN, humidity * 512, 2)
-        
-    def getTemperature(self):
+    
+    @property
+    def temperature(self):
         kelvin = self._read_int(_REG_DATA_T, 2) / 64
         return kelvin - 273.15
-        
-    def getHumidity(self):
-        return self._read_int(_REG_DATA_RH, 2) / 512
+    
+    @temperature.setter
+    def temperature(self, temperature):
+        kelvin = temperature + 273.15
+        self._write_int(_REG_TEMP_IN, int(kelvin * 64), 2)
+    
+    @property
+    def status(self):
+        return int.from_bytes(self._read(_REG_DEVICE_STATUS, 1),'little')
+    
+    @property
+    def status_statas(self):
+        return _read_bit(self.status, _BIT_DEVICE_STATUS_STATAS)
+    
+    @property
+    def status_stater(self):
+        return _read_bit(self.status, _BIT_DEVICE_STATUS_STATER)
+    
+    @property
+    def status_newdat(self):
+        print('new data is being checked')
+        temp = _read_bit(self.status, _BIT_DEVICE_STATUS_NEWDAT)
+        print('temp: ' + str(temp))
+        return temp
+    
+    @property
+    def status_newgpr(self):
+        return _read_bit(self.status, _BIT_DEVICE_STATUS_NEWGPR)
+    
+    @property
+    def status_validity_flag(self):
+        return _read_crumb(self.status, _BIT_DEVICE_STATUS_VALIDITY_FLAG)
+    
+    @property
+    def status_validity_flag_description(self):
+        return ['operating ok', 'warm-up', 'initial start-up', 'no valid output'][self.status_validity_flag]
     
     @property
     def aqi(self):
-        aqi = _read_tribit(self._read_int(_REG_DATA_AQI, 2), 0)
-        if aqi is not None:
-            return aqi
+        self._read_data()
+        if self._aqi is not None:
+            ratings={1:'excellent', 2:'good', 3:'moderate', 4:'poor', 5:'unhealthy'}
+            aqi = _read_tribit(self._aqi, 0)
+            return AQI_Tuple(aqi, ratings[aqi])
         else:
-            return aqi
+            return AQI_Tuple(None, '')
 
     @property
     def tvoc(self):
-        tvoc = self._read_int(_REG_DATA_TVOC, 2)
-        if tvoc is not None:
-            return tvoc
+        self._read_data()
+        if self._tvoc is not None:
+            return self._tvoc
         else:
-            return tvoc
+            return None
     
     @property
     def eco2(self):
-        eco2 = self._read_int(_REG_DATA_ECO2, 2)
-        if eco2 is not None:
-            return eco2
+        self._read_data()
+        if self._eco2 is not None:
+            eco2 = self._eco2
+            rating = 'invalid'
+            if eco2 >= 400:
+                rating = 'excellent'
+            if eco2 > 600:
+                rating = 'good'
+            if eco2 > 800:
+                rating = 'fair'
+            if eco2 > 1000:
+                rating = 'poor'
+            if eco2 > 1500:
+                rating = 'bad'
+            return ECO2_Tuple(eco2, rating)
         else:
-            return eco2
+            return ECO2_Tuple(None, '')
         
