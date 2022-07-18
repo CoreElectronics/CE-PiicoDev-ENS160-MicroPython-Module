@@ -90,9 +90,10 @@ class PiicoDev_ENS160(object):
         config = _write_bit(config, _BIT_CONFIG_INT_CFG, int_cfg)
         config = _write_bit(config, _BIT_CONFIG_INTPOL, intpol)
         self.config = config
-        self._aqi = None
-        self._tvoc = None
-        self._eco2 = None
+#         self._aqi = None
+#         self._tvoc = None
+#         self._eco2 = None
+#         self._
         try:
             part_id = self._read_int(_REG_PART_ID, 2)
             print('part_id: ' + str(part_id))
@@ -127,7 +128,7 @@ class PiicoDev_ENS160(object):
         except:
             print(i2c_err_str.format(self.address))
             return None
-        
+
     def _read_int(self, register, length):
         return int.from_bytes(self._read(register, length),'little')
 
@@ -137,8 +138,8 @@ class PiicoDev_ENS160(object):
     def _read_data(self):
         if self.status_newdat is True:
             print('----------------------------------------------------------------------------')
-            data = _read(self, _REG_DATA_AQI, 5)
-            self._aqi, self._tvoc, self._eco2 = unpack('<bhh', data)
+            data = self._read(_REG_DEVICE_STATUS, 6)
+            self._status, self._aqi, self._tvoc, self._eco2 = unpack('<bbhh', data)
     
     @property    
     def humidity(self):
@@ -160,7 +161,8 @@ class PiicoDev_ENS160(object):
     
     @property
     def status(self):
-        return int.from_bytes(self._read(_REG_DEVICE_STATUS, 1),'little')
+        self._read_data()
+        return self._status
     
     @property
     def status_statas(self):
@@ -173,9 +175,7 @@ class PiicoDev_ENS160(object):
     @property
     def status_newdat(self):
         print('new data is being checked')
-        temp = _read_bit(self.status, _BIT_DEVICE_STATUS_NEWDAT)
-        print('temp: ' + str(temp))
-        return temp
+        return _read_bit(self.status, _BIT_DEVICE_STATUS_NEWDAT)
     
     @property
     def status_newgpr(self):
