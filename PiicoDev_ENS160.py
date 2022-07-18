@@ -115,7 +115,7 @@ class PiicoDev_ENS160(object):
             print(i2c_err_str.format(self.address))
             raise e
         
-    def _read(self, register, length):
+    def _read(self, register, length=1):
         try:
             return self.i2c.readfrom_mem(self.address, register, length)
         except:
@@ -129,14 +129,15 @@ class PiicoDev_ENS160(object):
             print(i2c_err_str.format(self.address))
             return None
 
-    def _read_int(self, register, length):
+    def _read_int(self, register, length=1):
         return int.from_bytes(self._read(register, length),'little')
 
-    def _write_int(self, register, integer, length):
+    def _write_int(self, register, integer, length=1):
         return self._write(register, int.to_bytes(integer,length,'little'))
 
     def _read_data(self):
-        if self.status_newdat is True:
+        device_status = self._read_int(_REG_DEVICE_STATUS)
+        if _read_bit(device_status, _BIT_DEVICE_STATUS_NEWDAT) is True:
             print('----------------------------------------------------------------------------')
             data = self._read(_REG_DEVICE_STATUS, 6)
             self._status, self._aqi, self._tvoc, self._eco2 = unpack('<bbhh', data)
