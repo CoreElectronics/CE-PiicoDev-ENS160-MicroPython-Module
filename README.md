@@ -52,7 +52,7 @@ print(sensor.humidity)
 ```
 
 ### `.aqi`
-Reads the Air Quality Index according to UBA [1..5]
+Reads the Air Quality Index according to UBA [1..5].  The AQI-UBA air quality index is derived from a guideline by the German Federal Environmental Agency based on a Total Volatile Organic Compounds (TVOC) sum signal. Although a local, German guideline, it is referenced and adopted by many countries and organizations.
 
 **Example Usage**
 ```python
