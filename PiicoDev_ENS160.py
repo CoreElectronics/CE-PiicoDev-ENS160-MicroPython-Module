@@ -8,7 +8,7 @@ from ustruct import unpack
 
 compat_str = '\nUnified PiicoDev library out of date.  Get the latest module: https://piico.dev/unified \n'
 
-_I2C_ADDRESS = 0x52
+_I2C_ADDRESS = 0x53
 
 _REG_PART_ID       = 0x00
 _REG_OPMODE        = 0x10
@@ -70,7 +70,7 @@ def _write_bit(x, n, b):
         return _set_bit(x, n)
 
 class PiicoDev_ENS160(object):
-    def __init__(self, bus=None, freq=None, sda=None, scl=None, address=_I2C_ADDRESS, address_switch=None, asw=None, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25, humidity=70):
+    def __init__(self, bus=None, freq=None, sda=None, scl=None, address=_I2C_ADDRESS, address_switch=None, asw=None, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25.0, humidity=50.0):
         if address_switch == 0 or asw == 0: self.address = _I2C_ADDRESS
         elif address_switch == 1 or asw == 1: self.address = _I2C_ADDRESS - 1
         else: self.address = address
@@ -90,26 +90,20 @@ class PiicoDev_ENS160(object):
         config = _write_bit(config, _BIT_CONFIG_INT_CFG, int_cfg)
         config = _write_bit(config, _BIT_CONFIG_INTPOL, intpol)
         self.config = config
-#         self._aqi = None
-#         self._tvoc = None
-#         self._eco2 = None
-#         self._
+        self._aqi = None
+        self._tvoc = None
+        self._eco2 = None
         try:
             part_id = self._read_int(_REG_PART_ID, 2)
-            print('part_id: ' + str(part_id))
             if part_id != _VAL_PART_ID:
                 print('Device is not PiicoDev ENS160')
                 raise SystemExit
             self._write_int(_REG_OPMODE, _VAL_OPMODE_STANDARD, 1)
             sleep_ms(20)
-            print('written opmode standard')
             opmode = self._read_int(_REG_OPMODE, 1)
-            print('OPMODE: ' + str(opmode))
             sleep_ms(20)
             self._write_int(_REG_CONFIG, self.config, 1)
-            print('written config register')
             self.temperature = temperature
-            print('set the temperature')
             self.humidity = humidity
         except Exception as e:
             print(i2c_err_str.format(self.address))
@@ -138,7 +132,6 @@ class PiicoDev_ENS160(object):
     def _read_data(self):
         device_status = self._read_int(_REG_DEVICE_STATUS)
         if _read_bit(device_status, _BIT_DEVICE_STATUS_NEWDAT) is True:
-            print('----------------------------------------------------------------------------')
             data = self._read(_REG_DEVICE_STATUS, 6)
             self._status, self._aqi, self._tvoc, self._eco2 = unpack('<bbhh', data)
     
@@ -148,7 +141,7 @@ class PiicoDev_ENS160(object):
     
     @humidity.setter
     def humidity(self, humidity):
-        self._write_int(_REG_RH_IN, humidity * 512, 2)
+        self._write_int(_REG_RH_IN, int(humidity) * 512, 2)
     
     @property
     def temperature(self):
@@ -175,7 +168,6 @@ class PiicoDev_ENS160(object):
     
     @property
     def status_newdat(self):
-        print('new data is being checked')
         return _read_bit(self.status, _BIT_DEVICE_STATUS_NEWDAT)
     
     @property
