@@ -23,7 +23,7 @@ This module has been tested on:
 | sda                   | Pin   | Device Dependent | Device Dependent                      | I2C SDA Pin. Implemented on Raspberry Pi Pico only |
 | scl                   | Pin   | Device Dependent | Device Dependent                      | I2C SCL Pin. Implemented on Raspberry Pi Pico only |
 | address               | int   | 0x53             | 0x52, 0x53                            | Manually specify the address of the connected device |
-| address_switch or asw | int   | 0=OFF 1=ON       | None                                  | Hardware switches change the device address - Abstracts the need for user to look up an address, simply input the switch position. Alternatively, use `address` for explicit address. |
+| address_switch or asw | int   | 0=OFF 1=ON       | None                                  | Hardware switch changes the device address. Abstracts the need for user to look up an address, simply input the switch position. Alternatively, use `address` for explicit address. |
 | intdat                | bool  |                  | False                                 | INT pin asserted when new data is presented in the DATA_XXX Registers |
 | intgpr                | bool  |                  | False                                 | INT pin asserted when new data is presented in the General Purpose Read Registers |
 | int_cfg               | int   | 0, 1             | False                                 | INTn pin drive: 0: Open drain 1: Push / Pull |
