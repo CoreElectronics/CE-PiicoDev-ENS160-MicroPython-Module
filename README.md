@@ -34,12 +34,21 @@ This module has been tested on:
 ## Properties
 
 ### `.temperature`
-Sets the humidity
+Sets the temperature
 
 **Example Usage**
 ```python
 sensor.temperature = 24.3
 print(sensor.temperature)
+```
+
+### `.humidity`
+Sets the humidity
+
+**Example Usage**
+```python
+sensor.humidity = 55.3
+print(sensor.humidity)
 ```
 
 ### `.aqi`
