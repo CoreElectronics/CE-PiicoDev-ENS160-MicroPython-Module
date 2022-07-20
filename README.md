@@ -1,35 +1,102 @@
-<!-- TODO How to use this template
-Follow these commented instructions to build the repo.
-Delete the instructions as you go, to keep for a cleaner final file.
- -->
+# PiicoDev® Air Quality Sensor ENS160 MicroPython Module
 
-<!-- TODO Initialise the repo with the following two files:
- The MicroPython Module for this device with name: "PiicoDev_[DEVICE MFN].py". Eg for temperature sensor TMP117: PiicoDev_TMP117.py
- A (tested) main.py file
--->
-
-
-<!-- TODO update title to be descriptive. Eg.
-PiicoDev® [Description] [Part#] MicroPython Module
-PiicoDev® Precision Temperature Sensor TMP117 MicroPython Module -->
-# PiicoDev® Template MicroPython Module
-
-<!-- TODO update link URL with CE SKU -->
-<!-- TODO update link title -->
-This is the firmware repo for the [Core Electronics PiicoDev® XXXXXX](https://core-electronics.com.au/catalog/product/view/sku/XXXXXX)
+This is the firmware repo for the [Core Electronics PiicoDev® Air Quality Sensor ENS160](https://core-electronics.com.au/catalog/product/view/sku/CE08560)
 
 This module depends on the [PiicoDev Unified Library](https://github.com/CoreElectronics/CE-PiicoDev-Unified), include `PiicoDev_Unified.py` in the project directory on your MicroPython device.
 
-<!-- TODO update tutorial link with the device tinyurl eg. piico.dev/p1
-See the [Quickstart Guide](https://piico.dev/pX)
- -->
+See the [Quickstart Guide](https://piico.dev/p23)
 
-<!-- TODO verify the tested-devices list -->
+<!-- TODO verify the tested-devices list 
 This module has been tested on:
  - Micro:bit v2
  - Raspberry Pi Pico
  - Raspberry Pi SBC
+-->
 
+# Initialisation
+
+## `PiicoDev_Potentiometer(bus=, freq=, sda=, scl=, address=0x53, address_switch=, asw=, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25, humidity=50)`
+| Parameter             | Type  | Range            | Default                               | Description |
+| --------------------- | ----- | ---------------- | ------------------------------------- | --- |
+| bus                   | int   | 0,1              | Raspberry Pi Pico: 0, Raspberry Pi: 1 | I2C Bus.  Ignored on Micro:bit |
+| freq                  | int   | 100 to 1000000   | Device dependent                      | I2C Bus frequency (Hz).  Ignored on Raspberry Pi |
+| sda                   | Pin   | Device Dependent | Device Dependent                      | I2C SDA Pin. Implemented on Raspberry Pi Pico only |
+| scl                   | Pin   | Device Dependent | Device Dependent                      | I2C SCL Pin. Implemented on Raspberry Pi Pico only |
+| address               | int   | 0x53             | 0x52, 0x53                            | Manually specify the address of the connected device |
+| address_switch or asw | int   | 0=OFF 1=ON       | None                                  | Hardware switch changes the device address. Abstracts the need for user to look up an address, simply input the switch position. Alternatively, use `address` for explicit address. |
+| intdat                | bool  |                  | False                                 | INT pin asserted when new data is presented in the DATA_XXX Registers |
+| intgpr                | bool  |                  | False                                 | INT pin asserted when new data is presented in the General Purpose Read Registers |
+| int_cfg               | int   | 0, 1             | False                                 | INTn pin drive: 0: Open drain 1: Push / Pull |
+| intpol                | int   | 0, 1             | False                                 | INTn pin polarity: 0: Active low (Default) 1: Active high |
+| temperature           | float |                  | 25.0                                  | The current temperature |
+| humidity              | float |                  | 50.0                                  | The current humidity |
+
+## Properties
+
+### `.temperature`
+Sets the temperature
+
+**Example Usage**
+```python
+sensor.temperature = 24.3
+print(sensor.temperature)
+```
+
+### `.humidity`
+Sets the humidity
+
+**Example Usage**
+```python
+sensor.humidity = 55.3
+print(sensor.humidity)
+```
+
+### `.aqi`
+Reads the Air Quality Index according to UBA [1..5].  The AQI-UBA air quality index is derived from a guideline by the German Federal Environmental Agency based on a Total Volatile Organic Compounds (TVOC) sum signal. Although a local, German guideline, it is referenced and adopted by many countries and organizations.
+
+**Example Usage**
+```python
+aqi = sensor.aqi
+print(aqi.value)
+print(aqi.rating)
+```
+
+### `.tvoc`
+Reads the calculated Total Volatile Organic Compounds (TVOC) concentration in ppb.
+
+**Example Usage**
+```python
+tvoc = sensor.tvoc
+print(tvoc.value)
+print(tvoc.rating)
+```
+
+### `.eco2`
+Reads the calculated equivalent CO2-concentration in ppm, based on the detected VOCs and hydrogen
+
+**Example Usage**
+```python
+eco2 = sensor.eco2
+print(eco2)
+```
+
+### `.status_validity_flag`
+Reads the validity flag.  Returns 0 = 'operating ok', 1 = 'warm-up', 2 = 'initial start-up', 3 = 'no valid output'.
+
+**Example Usage**
+```python
+validity = sensor.status_validity_flag
+print(validity)
+```
+
+### `.status_validity_flag_description`
+Reads the validity flag.  Returns 'operating ok', 'warm-up', 'initial start-up', 'no valid output'.
+
+**Example Usage**
+```python
+validity = sensor.status_validity_flag_description
+print(validity)
+```
 
 # License
 This project is open source - please review the LICENSE.md file for further licensing information.
