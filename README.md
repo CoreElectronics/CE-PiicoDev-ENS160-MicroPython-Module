@@ -24,8 +24,8 @@ This module has been tested on:
 | scl                   | Pin   | Device Dependent | Device Dependent                      | I2C SCL Pin. Implemented on Raspberry Pi Pico only |
 | address               | int   | 0x53             | 0x52, 0x53                            | Manually specify the address of the connected device |
 | address_switch or asw | int   | 0=OFF 1=ON       | None                                  | Hardware switches change the device address - Abstracts the need for user to look up an address, simply input the switch position. Alternatively, use `address` for explicit address. |
-| intdat                | bool  |                  | False                                 | INTn pin asserted when new data is presented in the DATA_XXX Registers |
-| intgpr                | bool  |                  | False                                 | 100.0 | INTn pin asserted when new data is presented in the General Purpose Read Registers |
+| intdat                | bool  |                  | False                                 | INT pin asserted when new data is presented in the DATA_XXX Registers |
+| intgpr                | bool  |                  | False                                 | INT pin asserted when new data is presented in the General Purpose Read Registers |
 | int_cfg               | int   | 0, 1             | False                                 | INTn pin drive: 0: Open drain 1: Push / Pull |
 | intpol                | int   | 0, 1             | False                                 | INTn pin polarity: 0: Active low (Default) 1: Active high |
 | temperature           | float |                  | 20.0                                  | The current temperature |
@@ -33,12 +33,60 @@ This module has been tested on:
 
 ## Properties
 
-### `.value`
-Returns a float between 0.0 and 100.0 (default) or a value from a user-defined scale
+### `.temperature`
+Sets the humidity
 
 **Example Usage**
 ```python
-value = pot.value
+sensor.temperature = 24.3
+print(sensor.temperature)
+```
+
+### `.aqi`
+Reads the Air Quality Index according to UBA [1..5]
+
+**Example Usage**
+```python
+aqi = sensor.aqi
+print(aqi.value)
+print(aqi.rating)
+```
+
+### `.tvoc`
+Reads the calculated Total Volatile Organic Compounds (TVOC) concentration in ppb.
+
+**Example Usage**
+```python
+tvoc = sensor.tvoc
+print(tvoc.value)
+print(tvoc.rating)
+```
+
+### `.eco2`
+Reads the calculated equivalent CO2-concentration in ppm, based on the detected VOCs and hydrogen
+
+**Example Usage**
+```python
+eco2 = sensor.eco2
+print(eco2)
+```
+
+### `.status_validity_flag`
+Reads the validity flag.  Returns 0 = 'operating ok', 1 = 'warm-up', 2 = 'initial start-up', 3 = 'no valid output'.
+
+**Example Usage**
+```python
+validity = sensor.status_validity_flag
+print(validity)
+```
+
+### `.status_validity_flag_description`
+Reads the validity flag.  Returns 'operating ok', 'warm-up', 'initial start-up', 'no valid output'.
+
+**Example Usage**
+```python
+validity = sensor.status_validity_flag_description
+print(validity)
 ```
 
 # License
