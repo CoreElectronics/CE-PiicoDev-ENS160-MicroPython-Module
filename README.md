@@ -15,21 +15,21 @@ This module has been tested on:
 
 # Initialisation
 
-## `PiicoDev_Potentiometer(bus=, freq=, sda=, scl=, address=0x53, address_switch=, asw=, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25, humidity=50)`
-| Parameter             | Type  | Range            | Default                               | Description |
-| --------------------- | ----- | ---------------- | ------------------------------------- | --- |
-| bus                   | int   | 0,1              | Raspberry Pi Pico: 0, Raspberry Pi: 1 | I2C Bus.  Ignored on Micro:bit |
-| freq                  | int   | 100 to 1000000   | Device dependent                      | I2C Bus frequency (Hz).  Ignored on Raspberry Pi |
-| sda                   | Pin   | Device Dependent | Device Dependent                      | I2C SDA Pin. Implemented on Raspberry Pi Pico only |
-| scl                   | Pin   | Device Dependent | Device Dependent                      | I2C SCL Pin. Implemented on Raspberry Pi Pico only |
-| address               | int   | 0x53             | 0x52, 0x53                            | Manually specify the address of the connected device |
-| address_switch or asw | int   | 0=OFF 1=ON       | None                                  | Hardware switch changes the device address. Abstracts the need for user to look up an address, simply input the switch position. Alternatively, use `address` for explicit address. |
-| intdat                | bool  |                  | False                                 | INT pin asserted when new data is presented in the DATA_XXX Registers |
-| intgpr                | bool  |                  | False                                 | INT pin asserted when new data is presented in the General Purpose Read Registers |
-| int_cfg               | int   | 0, 1             | False                                 | INTn pin drive: 0: Open drain 1: Push / Pull |
-| intpol                | int   | 0, 1             | False                                 | INTn pin polarity: 0: Active low (Default) 1: Active high |
-| temperature           | float |                  | 25.0                                  | The current temperature |
-| humidity              | float |                  | 50.0                                  | The current humidity |
+## `PiicoDev_Potentiometer(bus=, freq=, sda=, scl=, address=0x53, asw=, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25, humidity=50)`
+| Parameter   | Type  | Range            | Default                               | Description |
+| ----------- | ----- | ---------------- | ------------------------------------- | --- |
+| bus         | int   | 0,1              | Raspberry Pi Pico: 0, Raspberry Pi: 1 | I2C Bus.  Ignored on Micro:bit |
+| freq        | int   | 100 to 1000000   | Device dependent                      | I2C Bus frequency (Hz).  Ignored on Raspberry Pi |
+| sda         | Pin   | Device Dependent | Device Dependent                      | I2C SDA Pin. Implemented on Raspberry Pi Pico only |
+| scl         | Pin   | Device Dependent | Device Dependent                      | I2C SCL Pin. Implemented on Raspberry Pi Pico only |
+| address     | int   | 0x53             | 0x52, 0x53                            | Manually specify the address of the connected device |
+| asw         | int   | 0=OFF 1=ON       | None                                  | Hardware switch changes the device address. Abstracts the need for user to look up an address, simply input the switch position. Alternatively, use `address` for explicit address. |
+| intdat      | bool  |                  | False                                 | INT pin asserted when new data is presented in the DATA_XXX Registers |
+| intgpr      | bool  |                  | False                                 | INT pin asserted when new data is presented in the General Purpose Read Registers 
+| int_cfg     | int   | 0, 1             | False                                 | INTn pin drive: 0: Open drain 1: Push / Pull |
+| intpol      | int   | 0, 1             | False                                 | INTn pin polarity: 0: Active low (Default) 1: Active high |
+| temperature | float |                  | 25.0                                  | The current temperature |
+| humidity    | float |                  | 50.0                                  | The current humidity |
 
 ## Properties
 
