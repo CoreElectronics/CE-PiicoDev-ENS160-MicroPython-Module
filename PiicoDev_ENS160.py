@@ -70,9 +70,9 @@ def _write_bit(x, n, b):
         return _set_bit(x, n)
 
 class PiicoDev_ENS160(object):
-    def __init__(self, bus=None, freq=None, sda=None, scl=None, address=_I2C_ADDRESS, address_switch=None, asw=None, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25.0, humidity=50.0):
-        if address_switch == 0 or asw == 0: self.address = _I2C_ADDRESS
-        elif address_switch == 1 or asw == 1: self.address = _I2C_ADDRESS - 1
+    def __init__(self, bus=None, freq=None, sda=None, scl=None, address=_I2C_ADDRESS, asw=None, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25.0, humidity=50.0):
+        if asw == 0: self.address = _I2C_ADDRESS
+        elif asw == 1: self.address = _I2C_ADDRESS - 1
         else: self.address = address
         try:
             if compat_ind >= 1:
