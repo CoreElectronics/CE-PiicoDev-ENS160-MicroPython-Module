@@ -15,7 +15,7 @@ This module has been tested on:
 
 # Initialisation
 
-## `PiicoDev_Potentiometer(bus=, freq=, sda=, scl=, address=0x53, asw=, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25, humidity=50)`
+## `PiicoDev_ENS160(bus=, freq=, sda=, scl=, address=0x53, asw=, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25, humidity=50)`
 | Parameter   | Type  | Range            | Default                               | Description |
 | ----------- | ----- | ---------------- | ------------------------------------- | --- |
 | bus         | int   | 0,1              | Raspberry Pi Pico: 0, Raspberry Pi: 1 | I2C Bus.  Ignored on Micro:bit |
