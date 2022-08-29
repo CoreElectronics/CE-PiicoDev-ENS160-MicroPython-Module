@@ -186,7 +186,7 @@ class PiicoDev_ENS160(object):
     def aqi(self):
         self._read_data()
         if self._aqi is not None:
-            ratings={1:'excellent', 2:'good', 3:'moderate', 4:'poor', 5:'unhealthy'}
+            ratings={0: 'invalid', 1:'excellent', 2:'good', 3:'moderate', 4:'poor', 5:'unhealthy'}
             aqi = _read_tribit(self._aqi, 0)
             return AQI_Tuple(aqi, ratings[aqi])
         else:
