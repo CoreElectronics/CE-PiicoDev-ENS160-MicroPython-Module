@@ -94,7 +94,7 @@ Reads the validity flag.  Returns 'operating ok', 'warm-up', 'initial start-up',
 
 **Example Usage**
 ```python
-validity = sensor.status_validity_flag_description
+validity = sensor.operation
 print(validity)
 ```
 
