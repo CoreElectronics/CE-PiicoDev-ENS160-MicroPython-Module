@@ -179,7 +179,7 @@ class PiicoDev_ENS160(object):
         return _read_crumb(self.status, _BIT_DEVICE_STATUS_VALIDITY_FLAG)
     
     @property
-    def status_validity_flag_description(self):
+    def operation(self):
         return ['operating ok', 'warm-up', 'initial start-up', 'no valid output'][self.status_validity_flag]
     
     @property

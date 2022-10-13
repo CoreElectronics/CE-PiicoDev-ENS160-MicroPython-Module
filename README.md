@@ -6,13 +6,6 @@ This module depends on the [PiicoDev Unified Library](https://github.com/CoreEle
 
 See the [Quickstart Guide](https://piico.dev/p23)
 
-<!-- TODO verify the tested-devices list 
-This module has been tested on:
- - Micro:bit v2
- - Raspberry Pi Pico
- - Raspberry Pi SBC
--->
-
 # Initialisation
 
 ## `PiicoDev_ENS160(bus=, freq=, sda=, scl=, address=0x53, asw=, intdat=False, intgpr=False, int_cfg=0, intpol=0, temperature=25, humidity=50)`
@@ -85,17 +78,15 @@ Reads the validity flag.  Returns 0 = 'operating ok', 1 = 'warm-up', 2 = 'initia
 
 **Example Usage**
 ```python
-validity = sensor.status_validity_flag
-print(validity)
+print(sensor.status_validity_flag)
 ```
 
-### `.status_validity_flag_description`
+### `.operation`
 Reads the validity flag.  Returns 'operating ok', 'warm-up', 'initial start-up', 'no valid output'.
 
 **Example Usage**
 ```python
-validity = sensor.operation
-print(validity)
+print(sensor.operation)
 ```
 
 # License
