@@ -14,7 +14,7 @@ while True:
     print('       statas: ' + str(sensor.status_statas))
     print('       stater: ' + str(sensor.status_stater))
     print('validity_flag: ' + str(sensor.status_validity_flag))
-    print('validity_flag_desc: ' + str(sensor.status_validity_flag_description))
+    print('validity_flag_desc: ' + str(sensor.operation))
     print('       newdat: ' + str(sensor.status_newdat))
     print('       newgpr: ' + str(sensor.status_newgpr))
 #    print('AQI: ' + str(sensor.readAQI()))
