@@ -1,5 +1,4 @@
-# https://www.sciosense.com/wp-content/uploads/documents/SC-001224-DS-7-ENS160-Datasheet.pdf
-# https://github.com/DFRobot/DFRobot_ENS160
+# Based off: https://github.com/DFRobot/DFRobot_ENS160
 # Peter Johnston at Core Electronics June 2022
 
 from PiicoDev_Unified import *
