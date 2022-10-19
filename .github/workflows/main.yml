@@ -7,7 +7,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'PiicoDev_Potentiometer.py'
+      - 'PiicoDev_ENS160.py'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -30,14 +30,14 @@ jobs:
         run: pip install python-minifier
 
       - name: run minifier
-        run: pyminify PiicoDev_Potentiometer.py > min/PiicoDev_Potentiometer.py
+        run: pyminify PiicoDev_ENS160.py > min/PiicoDev_ENS160.py
           
       - name: commit files
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add -A
-          git commit -m "Update min/PiicoDev_Potentiometer.py" -a --allow-empty
+          git commit -m "Update min/PiicoDev_ENS160.py" -a --allow-empty
           
       - name: push changes
         uses: ad-m/github-push-action@v0.6.0
