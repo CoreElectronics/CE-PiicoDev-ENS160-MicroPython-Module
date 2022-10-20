@@ -1,11 +1,12 @@
-_E='excellent'
-_D='invalid'
-_C='little'
-_B='rating'
+_F='excellent'
+_E='invalid'
+_D='little'
+_C='rating'
+_B=False
 _A=None
 from PiicoDev_Unified import *
-from ucollections import namedtuple
-from ustruct import unpack
+try:from ucollections import namedtuple;from ustruct import unpack
+except:from collections import namedtuple;from struct import unpack
 compat_str='\nUnified PiicoDev library out of date.  Get the latest module: https://piico.dev/unified \n'
 _I2C_ADDRESS=83
 _REG_PART_ID=0
@@ -38,8 +39,8 @@ _VAL_OPMODE_DEEP_SLEEP=0
 _VAL_OPMODE_IDLE=1
 _VAL_OPMODE_STANDARD=2
 _VAL_OPMODE_RESET=240
-AQI_Tuple=namedtuple('air quality index',('value',_B))
-ECO2_Tuple=namedtuple('equivelent carbon dioxide',('value',_B))
+AQI_Tuple=namedtuple('AQI',('value',_C))
+ECO2_Tuple=namedtuple('eCO2',('value',_C))
 def _read_bit(x,n):return x&1<<n!=0
 def _read_crumb(x,n):return _read_bit(x,n)+_read_bit(x,n+1)*2
 def _read_tribit(x,n):return _read_bit(x,n)+_read_bit(x,n+1)*2+_read_bit(x,n+2)*4
@@ -49,7 +50,7 @@ def _write_bit(x,n,b):
 	if b==0:return _clear_bit(x,n)
 	else:return _set_bit(x,n)
 class PiicoDev_ENS160:
-	def __init__(self,bus=_A,freq=_A,sda=_A,scl=_A,address=_I2C_ADDRESS,asw=_A,intdat=False,intgpr=False,int_cfg=0,intpol=0,temperature=25.0,humidity=50.0):
+	def __init__(self,bus=_A,freq=_A,sda=_A,scl=_A,address=_I2C_ADDRESS,asw=_A,intdat=_B,intgpr=_B,int_cfg=0,intpol=0,temperature=25.0,humidity=50.0):
 		if asw==0:self.address=_I2C_ADDRESS
 		elif asw==1:self.address=_I2C_ADDRESS-1
 		else:self.address=address
@@ -65,17 +66,20 @@ class PiicoDev_ENS160:
 			if part_id!=_VAL_PART_ID:print('Device is not PiicoDev ENS160');raise SystemExit
 			self._write_int(_REG_OPMODE,_VAL_OPMODE_STANDARD,1);sleep_ms(20);opmode=self._read_int(_REG_OPMODE,1);sleep_ms(20);self._write_int(_REG_CONFIG,self.config,1);self.temperature=temperature;self.humidity=humidity
 		except Exception as e:print(i2c_err_str.format(self.address));raise e
-	def _read(self,register,length=1):
-		try:return self.i2c.readfrom_mem(self.address,register,length)
+	def _read(self,register,length=1,bytestring=_B):
+		try:
+			d=self.i2c.readfrom_mem(self.address,register,length)
+			if bytestring:return bytes(d)
+			return d
 		except:print(i2c_err_str.format(self.address));return _A
 	def _write(self,register,data):
 		try:return self.i2c.writeto_mem(self.address,register,data)
 		except:print(i2c_err_str.format(self.address));return _A
-	def _read_int(self,register,length=1):return int.from_bytes(self._read(register,length),_C)
-	def _write_int(self,register,integer,length=1):return self._write(register,int.to_bytes(integer,length,_C))
+	def _read_int(self,register,length=1):return int.from_bytes(self._read(register,length),_D)
+	def _write_int(self,register,integer,length=1):return self._write(register,int.to_bytes(integer,length,_D))
 	def _read_data(self):
 		device_status=self._read_int(_REG_DEVICE_STATUS)
-		if _read_bit(device_status,_BIT_DEVICE_STATUS_NEWDAT)is True:data=self._read(_REG_DEVICE_STATUS,6);self._status,self._aqi,self._tvoc,self._eco2=unpack('<bbhh',data)
+		if _read_bit(device_status,_BIT_DEVICE_STATUS_NEWDAT)is True:data=self._read(_REG_DEVICE_STATUS,6,bytestring=True);self._status,self._aqi,self._tvoc,self._eco2=unpack('<bbhh',data)
 	@property
 	def humidity(self):return self._read_int(_REG_DATA_RH,2)/512
 	@humidity.setter
@@ -101,7 +105,7 @@ class PiicoDev_ENS160:
 	@property
 	def aqi(self):
 		self._read_data()
-		if self._aqi is not _A:ratings={0:_D,1:_E,2:'good',3:'moderate',4:'poor',5:'unhealthy'};aqi=_read_tribit(self._aqi,0);return AQI_Tuple(aqi,ratings[aqi])
+		if self._aqi is not _A:ratings={0:_E,1:_F,2:'good',3:'moderate',4:'poor',5:'unhealthy'};aqi=_read_tribit(self._aqi,0);return AQI_Tuple(aqi,ratings[aqi])
 		else:return AQI_Tuple(_A,'')
 	@property
 	def tvoc(self):
@@ -112,8 +116,8 @@ class PiicoDev_ENS160:
 	def eco2(self):
 		self._read_data()
 		if self._eco2 is not _A:
-			eco2=self._eco2;rating=_D
-			if eco2>=400:rating=_E
+			eco2=self._eco2;rating=_E
+			if eco2>=400:rating=_F
 			if eco2>600:rating='good'
 			if eco2>800:rating='fair'
 			if eco2>1000:rating='poor'
