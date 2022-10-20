@@ -2,8 +2,12 @@
 # Peter Johnston at Core Electronics June 2022
 
 from PiicoDev_Unified import *
-from ucollections import namedtuple
-from ustruct import unpack
+try:
+    from ucollections import namedtuple
+    from ustruct import unpack
+except:
+    from collections import namedtuple
+    from struct import unpack
 
 compat_str = '\nUnified PiicoDev library out of date.  Get the latest module: https://piico.dev/unified \n'
 
@@ -43,8 +47,8 @@ _VAL_OPMODE_IDLE       = 0x01
 _VAL_OPMODE_STANDARD   = 0x02
 _VAL_OPMODE_RESET      = 0xF0
 
-AQI_Tuple = namedtuple("air quality index", ("value", "rating"))
-ECO2_Tuple = namedtuple("equivelent carbon dioxide", ("value", "rating"))
+AQI_Tuple = namedtuple("AQI", ("value", "rating"))
+ECO2_Tuple = namedtuple("eCO2", ("value", "rating"))
 
 
 def _read_bit(x, n):
@@ -108,12 +112,16 @@ class PiicoDev_ENS160(object):
             print(i2c_err_str.format(self.address))
             raise e
         
-    def _read(self, register, length=1):
+    def _read(self, register, length=1, bytestring=False):
         try:
-            return self.i2c.readfrom_mem(self.address, register, length)
+            d= self.i2c.readfrom_mem(self.address, register, length)
+            if bytestring: return bytes(d)
+            return d
         except:
             print(i2c_err_str.format(self.address))
             return None
+        
+        
         
     def _write(self, register, data):
         try:
@@ -131,7 +139,7 @@ class PiicoDev_ENS160(object):
     def _read_data(self):
         device_status = self._read_int(_REG_DEVICE_STATUS)
         if _read_bit(device_status, _BIT_DEVICE_STATUS_NEWDAT) is True:
-            data = self._read(_REG_DEVICE_STATUS, 6)
+            data = self._read(_REG_DEVICE_STATUS, 6, bytestring=True)
             self._status, self._aqi, self._tvoc, self._eco2 = unpack('<bbhh', data)
     
     @property    
